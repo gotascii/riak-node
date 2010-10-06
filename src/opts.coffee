@@ -19,6 +19,6 @@ class Opts
   encodeData: ->
     if @data?
       @headers = {'Content-Type' : 'application/json'}
-      @data = JSON.stringify(@data)
+      @data = JSON.stringify @data
 
 module.exports = Opts
