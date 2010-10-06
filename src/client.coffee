@@ -1,36 +1,31 @@
-http = require('http')
-querystring = require('querystring')
-
-storeKeyless = (bucket, data, params, handler) -> 
-  httpClient = http.createClient(8098)
-  queryParams = querystring.stringify(params)
-  request = httpClient.request('POST', "/riak/#{bucket}?#{queryParams}", {'Content-Type' : 'application/json'})
-  request.on('response', (response) ->
-    response.setEncoding('utf8')
-    response.on('data', (chunk) ->
-      handler(response, chunk)
-    )
-  )
-  encodedData = JSON.stringify(data)
-  request.end(encodedData)
-
-read = (bucket, key, params, handler) ->
-  httpClient = http.createClient(8098)
-  queryParams = querystring.stringify(params)
-  request = httpClient.request("/riak/#{bucket}/#{key}?#{queryParams}")
-  request.on('response', (response) ->
-    response.setEncoding('utf8')
-    response.on('data', (chunk) ->
-      handler(response, chunk)
-    )
-  )
-  request.end()
-
 sys = require('sys')
-key = ''
-storeKeyless("bucket", {jack: 'rules'}, {returnbody: 'true'}, (response, chunk) ->
-  sys.puts('STATUS: ' + response.statusCode)
-  sys.puts('HEADERS: ' + JSON.stringify(response.headers))
-  sys.puts('BODY: ' + chunk)
-  key = response.headers["location"]
-)
+http = require('http')
+client = http.createClient(8098)
+Opts = require('./opts')
+
+store = (opts, resHandler) ->
+  opts.method = if opts.key? then 'PUT' else 'POST'
+  exec(opts, resHandler)
+
+exec = (opts, resHandler) ->
+  opts = new Opts(opts)
+  req = client.request(opts.method, opts.path, opts.headers)
+  req.on('response', (res) ->
+    res.setEncoding('utf8')
+    res.on('data', (chunk) ->
+      resHandler(res, chunk)
+    )
+  )
+  req.write(opts.data) if opts.data?
+  req.end()
+  sys.puts('done')
+
+# store({
+#   bucket: "omfg"
+#   data: {terds: "rule"}
+#   params: {returnbody: 'true'}
+# }, (response, chunk) ->
+#   sys.puts('STATUS: ' + response.statusCode)
+#   sys.puts('HEADERS: ' + JSON.stringify(response.headers))
+#   sys.puts('BODY: ' + chunk)
+# )
