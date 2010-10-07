@@ -1,12 +1,13 @@
 querystring = require('querystring')
 
-class Opts
+class RiakObject
   constructor: (@opts) ->
     @bucket = @opts.bucket
     @key = @opts.key
     @data = @opts.data
-    @params = @opts.params
-    @method = @opts.method
+    @method = @opts.method or= 'GET'
+    @params = {}
+    @params[param] = @opts[param] for param in Meta.queryParams
     @generatePath()
     @encodeData()
 
@@ -21,4 +22,6 @@ class Opts
       @headers = {'Content-Type' : 'application/json'}
       @data = JSON.stringify @data
 
-module.exports = Opts
+RiakObject.queryParams = ['w', 'dw', 'returnbody']
+
+module.exports = RiakObject
