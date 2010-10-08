@@ -1,25 +1,34 @@
 sys = require 'sys'
 http = require 'http'
-client = http.createClient 8098
 RiakObject = require './riak_object'
 
-get = (opts, resHandler) ->
-  exec opts, resHandler
+class Client
+  constructor: ->
+    @prefix = '/riak'
+    @client = http.createClient 8098
 
-store = (opts, resHandler) ->
-  opts.method = 'POST'
-  exec opts, resHandler
+  store: (robj, opts, handler) ->
+    querystring.stringify(opts)
+    method = if robj.key? then 'PUT' else 'POST'
+    path = "#{@prefix}#{robj.path}"
+    exec(robj, method, path, opts, handler)
 
-exec = (opts, resHandler) ->
-  robj = new RiakObject opts
-  req = client.request robj.method, robj.path, robj.headers
-  req.on 'response', (res) ->
-    res.setEncoding 'utf8'
-    res.on 'data', (chunk) ->
-      resHandler res, chunk
-  req.write robj.data if robj.data?
-  req.end()
-  sys.puts 'done'
+  exec: (robj, method, path, opts, handler) ->
+    if typeof opts == 'function'
+      handler = opts
+      opts = undefined
+    path = "#{path}?#{querystring.stringify(opts)}" if opts?
+    req = @client.request method, path, robj.headers
+    req.write robj.encodedData() if robj.data?
+    buffer = ''
+    req.on 'response', (res) ->
+      res.setEncoding 'utf8'
+      res.on 'data', (chunk) -> buffer += chunk
+      res.on 'end', ->
+        # load response into robj
+        # call handler pass along robj
+        # handle errors in some way
+    req.end()
 
 # get({
 #   bucket: "omfg",
