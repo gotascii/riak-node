@@ -1,3 +1,4 @@
+sys = require 'sys'
 client = require('http').createClient 8098
 prefix = '/riak'
 encoding = 'utf8'

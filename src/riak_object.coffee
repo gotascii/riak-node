@@ -13,13 +13,18 @@ class RiakObject extends EventEmitter
   headers: ->
     {'content-type': @contentType}
 
+  read: (opts) ->
+    client.read(this, opts)
+
   load: (statusCode, headers, buffer) ->
     @key = headers.location.split("/").pop() if headers.location?
     @contentType = headers['content-type']
     unless buffer == ''
       @rawData = buffer
       @deserialize()
-    @emit 'loaded'
+    # beer for all
+    @emit 'beer'
+    @bucket.emit 'beer', this
 
   serialize: ->
     @rawData = JSON.stringify @data if @data?
@@ -35,23 +40,4 @@ class RiakObject extends EventEmitter
   store: (opts) ->
     client.store(this, opts)
 
-  on: (event, listener) ->
-    super event, (args...) ->
-      listener.apply(this, args)
-
 module.exports = RiakObject
-
-# sys = require 'sys'
-# c = require('./lib/client')
-# RiakObject = require('./lib/riak_object')
-# 
-# Bucket = require('./lib/bucket')
-# posts = new Bucket "posts"
-# 
-# robj = new RiakObject(posts)
-# robj.data = {terd: "licks"}
-# robj.on 'loaded', -> sys.puts(sys.inspect(this))
-# robj.store()
-
-# posts.on 'riakObjectLoaded', (robj) -> sys.puts(sys.inspect(robj))
-# posts.read(robj.key)
