@@ -1,28 +1,51 @@
 sys = require 'sys'
-client = require('http').createClient 8098
-prefix = '/riak'
-encoding = 'utf8'
+http = require 'http'
+querystring = require 'querystring'
+EventEmitter = require('events').EventEmitter
+Errors =
+  400: "Bad Request - e.g. when r parameter is invalid (> N)"
+  404: "Not Found - the object could not be found on enough partitions"
+  503: "Service Unavailable - the request timed out internally"
 
-module.exports =
-  store: (robj, opts) ->
-    method = if robj.key? then 'PUT' else 'POST'
-    @exec(robj, method, opts)
+class Client extends EventEmitter
+  constructor: ->
+    @prefix = '/riak'
+    @encoding = 'utf8'
+    @client = http.createClient 8098
+    @client.on 'error', (exception) =>
+      @emit 'barf',
+        message: exception.message
 
-  read: (robj, opts) ->
-    @exec(robj, 'GET', opts)
+  put: (path, headers, data, opts)->
+    @exec('PUT', path, headers, data, opts)
 
-  exec: (robj, method, opts) ->
-    req = client.request method, @getPath(robj, opts), robj.headers()
-    robj.write(req)
+  get: (path, headers, opts)->
+    @exec('GET', path, headers, undefined, opts)
+
+  querify: (path, opts) ->
+    path = "#{@prefix}#{path}"
+    path += "?#{querystring.stringify(opts)}" if opts?
+    path
+
+  exec: (method, path, headers, opts, data) ->
+    path = @querify(path, opts)
+    req = @client.request method, path, headers
+    req.write(data) if data?
+    req.end()
     req.on 'response', (res) ->
       res.setEncoding encoding
       buffer = ''
       res.on 'data', (chunk) -> buffer += chunk
       res.on 'end', ->
-        robj.load(res.statusCode, res.headers, buffer)
-    req.end()
+        error = Errors[res.statusCode]
+        if error?
+          @emit 'barf',
+            statusCode: res.statusCode,
+            message: error
+        else
+          @emit 'beer',
+            statusCode: res.statusCode,
+            headers: res.headers
+            rawData: buffer
 
-  getPath: (robj, opts) ->
-    path = "#{prefix}#{robj.path}"
-    path += "?#{querystring.stringify(opts)}" if opts?
-    path
+module.exports = Client

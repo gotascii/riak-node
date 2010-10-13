@@ -1,5 +1,5 @@
 sys = require 'sys'
-client = require './client'
+Client = require './client'
 EventEmitter = require('events').EventEmitter
 
 class RiakObject extends EventEmitter
@@ -9,35 +9,38 @@ class RiakObject extends EventEmitter
     @path = bucket.path
     @path += "/#{key}" if key?
     @contentType = 'application/json'
+    @client = new Client
+    @client.on 'beer', (beer) -> drink(beer)
+    @client.on 'barf', (barf) -> @emit 'barf', barf
 
   headers: ->
     {'content-type': @contentType}
 
-  read: (opts) ->
-    client.read(this, opts)
+  store: (opts) ->
+    method = if obj.key? 'put' else 'post'
+    @serialize()
+    @client[method](@path, @headers(), opts, @rawData)
 
-  load: (statusCode, headers, buffer) ->
+  read: (opts) ->
+    @client.get(@path, @headers(), opts)
+
+  drink: (beer) ->
+    headers = beer.headers
     @key = headers.location.split("/").pop() if headers.location?
     @contentType = headers['content-type']
-    unless buffer == ''
-      @rawData = buffer
-      @deserialize()
-    # beer for all
+    @read beer.buffer
     @emit 'beer'
     @bucket.emit 'beer', this
+
+  read: (buffer) ->
+    if buffer? and buffer != ''
+      @rawData = buffer
+      @deserialize()
 
   serialize: ->
     @rawData = JSON.stringify @data if @data?
 
   deserialize: ->
     @data = JSON.parse @rawData if @rawData?
-
-  write: (req) ->
-    if @data?
-      @serialize()
-      req.write @rawData
-
-  store: (opts) ->
-    client.store(this, opts)
 
 module.exports = RiakObject

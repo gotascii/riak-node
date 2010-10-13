@@ -12,21 +12,39 @@ testCase = require('nodeunit').testCase
 #   robj3.read()
 # robj.store()
 
-module.exports = testCase
-  setUp: ->
-    @posts = new Bucket "posts"
-    @robj = new RiakObject @posts
+module.exports =
+  testWithBucket: testCase
+    setUp: ->
+      @posts = new Bucket "posts"
+      @robj = new RiakObject @posts
 
-  testLoadEmitsBeerOnBucket: (assert) ->
-    test = this
-    @posts.on 'beer', (robj) ->
-      assert.equals test.robj, robj
+    testHasBucket: (assert) ->
+      assert.equal @posts, @robj.bucket
       assert.done()
-    @robj.store()
 
-  testLoadEmitsBeerOnSelf: (assert) ->
-    test = this
-    @robj.on 'beer', ->
-      assert.equals test.robj, this
+    testHasNoKey: (assert) ->
+      assert.equal undefined, @robj.key
       assert.done()
-    @robj.store()
+
+    testHasPath: (assert) ->
+      assert.equal "/posts", @robj.path
+      assert.done()
+
+    testDefaultContentTypeJSON: (assert) ->
+      assert.equal "application/json", @robj.contentType
+      assert.done()
+
+    testDefaultContentTypeJSON: (assert) ->
+      assert.equal "application/json", @robj.contentType
+      assert.done()
+
+    testGeneratesHeaders: (assert) ->
+      assert.deepEqual {'content-type':"application/json"}, @robj.headers()
+      assert.done()
+
+    testStoreEmitsBeerOnSelf: (assert) ->
+      test = this
+      @robj.on 'beer', ->
+        assert.equals test.robj, this
+        assert.done()
+      @robj.store()
