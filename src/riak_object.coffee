@@ -10,11 +10,17 @@ class RiakObject extends EventEmitter
     @path += "/#{key}" if key?
     @contentType = 'application/json'
     @client = new Client
-    @client.on 'beer', (beer) => @drink(beer)
+    @client.on 'beer', (beer) => @drink beer
     @client.on 'barf', (barf) => @emit 'barf', barf
 
   headers: ->
     {'content-type': @contentType}
+
+  serialize: ->
+    @rawData = JSON.stringify @data if @data?
+
+  deserialize: ->
+    @data = JSON.parse @rawData if @rawData?
 
   store: (opts) ->
     method = if obj.key? 'put' else 'post'
@@ -24,23 +30,17 @@ class RiakObject extends EventEmitter
   read: (opts) ->
     @client.get(@path, @headers(), opts)
 
-  drink: (beer) ->
-    headers = beer.headers
-    @key = headers.location.split("/").pop() if headers.location?
-    @contentType = headers['content-type']
-    @read beer.buffer
-    @emit 'beer'
-    @bucket.emit 'beer', this
-
-  read: (buffer) ->
+  ingest: (buffer) ->
     if buffer? and buffer != ''
       @rawData = buffer
       @deserialize()
 
-  serialize: ->
-    @rawData = JSON.stringify @data if @data?
-
-  deserialize: ->
-    @data = JSON.parse @rawData if @rawData?
+  drink: (beer) ->
+    headers = beer.headers
+    @key = headers.location.split("/").pop() if headers.location?
+    @contentType = headers['content-type']
+    @ingest beer.buffer
+    @emit 'beer'
+    @bucket.emit 'beer', this
 
 module.exports = RiakObject
