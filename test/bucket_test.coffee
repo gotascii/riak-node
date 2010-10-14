@@ -1,16 +1,17 @@
 Bucket = require('../lib/bucket')
 testCase = require('nodeunit').testCase
 
-module.exports = testCase
-  setUp: -> @posts = new Bucket "posts"
+module.exports =
+  "A bucket": testCase
+    setUp: -> @posts = new Bucket "posts"
 
-  testBucketName: (assert) ->
-    assert.equals @posts.name, "posts"
-    assert.done()
+    "should have a name": (assert) ->
+      assert.equals @posts.name, "posts"
+      assert.done()
 
-  testBucketPath: (assert) ->
-    assert.equals @posts.path, "/posts"
-    assert.done()
+    "should have a path": (assert) ->
+      assert.equals @posts.path, "/posts"
+      assert.done()
 
 # Bucket = require('../lib/bucket')
 # posts = new Bucket "posts"

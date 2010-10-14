@@ -15,19 +15,19 @@ module.exports =
       helper.unstub()
 
     "should have a bucket": (assert) ->
-      assert.equal @bucket, @robj.bucket
+      assert.equal @robj.bucket, @bucket
       assert.done()
 
     "should not have a key": (assert) ->
-      assert.equal undefined, @robj.key
+      assert.equal @robj.key, undefined
       assert.done()
     
     "should have a path that matches the bucket path": (assert) ->
-      assert.equal @bucket.path, @robj.path
+      assert.equal @robj.path, @bucket.path
       assert.done()
     
     "should have a contentType of application/json": (assert) ->
-      assert.equal "application/json", @robj.contentType
+      assert.equal @robj.contentType, "application/json"
       assert.done()
 
     "should have a client": (assert) ->
@@ -37,44 +37,44 @@ module.exports =
     "should drink beer if client emits beer": (assert) ->
       helper.stub @robj, 'drink', (beer) => assert.equal "beer!", beer
       @robj.client.emit 'beer', "beer!"
-      assert.expect(1)
+      assert.expect 1
       assert.done()
 
     "should emit barf if client emits barf": (assert) ->
       @robj.on 'barf', (barf) ->
-        assert.equal "barf!", barf
+        assert.equal barf, "barf!"
       @robj.client.emit 'barf', "barf!"
-      assert.expect(1)
+      assert.expect 1
       assert.done()
 
     "should generate headers": (assert) ->
-      assert.deepEqual {'content-type':"application/json"}, @robj.headers()
+      assert.deepEqual @robj.headers(), {'content-type':"application/json"}
       assert.done()
 
     "should JSON.stringify data into rawData": (assert) ->
       @robj.data = {chug: "brew"}
       @robj.serialize()
-      assert.equal "{\"chug\":\"brew\"}", @robj.rawData
+      assert.equal @robj.rawData, "{\"chug\":\"brew\"}"
       assert.done()
 
     "should not JSON.stringify data into rawData if there is no data": (assert) ->
       @robj.rawData = "brewtownusa"
       @robj.data = undefined
       @robj.serialize()
-      assert.equal "brewtownusa", @robj.rawData
+      assert.equal @robj.rawData, "brewtownusa"
       assert.done()
 
     "should JSON.parse rawData into data": (assert) ->
       @robj.rawData = "{\"beers\":10}"
       @robj.deserialize()
-      assert.deepEqual {beers: 10}, @robj.data
+      assert.deepEqual @robj.data, {beers: 10}
       assert.done()
 
     "should not JSON.parse rawData into data if there is no rawData": (assert) ->
       @robj.data = {beers: 10}
       @robj.rawData = undefined
       @robj.deserialize()
-      assert.deepEqual {beers: 10}, @robj.data
+      assert.deepEqual @robj.data, {beers: 10}
       assert.done()
 
     "should serialize on store": (assert) ->
@@ -90,17 +90,17 @@ module.exports =
       helper.stub @robj, 'serialize'
       helper.stub @robj, 'headers', -> {header: "value"}
       helper.stub @robj.client, 'post', (path, headers, opts, data) ->
-        assert.equal '/path', path
-        assert.deepEqual {header: "value"}, headers
-        assert.deepEqual {option: "value"}, opts
-        assert.equal 'rawData!', data
+        assert.equal path, '/path'
+        assert.deepEqual headers, {header: "value"}
+        assert.deepEqual opts, {option: "value"}
+        assert.equal data, 'rawData!'
       @robj.store {option: "value"}
       assert.expect 4
       assert.done()
 
     "should barf on read without key": (assert) ->
       @robj.on 'barf', (barf) ->
-        assert.equal "Key is undefined. I cannot read without a key.", barf.message
+        assert.ok barf.message?
       @robj.read()
       assert.expect 1
       assert.done()
@@ -110,10 +110,10 @@ module.exports =
       @robj.path = '/path'
       helper.stub @robj, 'headers', -> {header: "value"}
       helper.stub @robj.client, 'get', (path, headers, opts, data) ->
-        assert.equal '/path', path
-        assert.deepEqual {header: "value"}, headers
-        assert.deepEqual {option: "value"}, opts
-        assert.equal undefined, data
+        assert.equal path, '/path'
+        assert.deepEqual headers, {header: "value"}
+        assert.deepEqual opts, {option: "value"}
+        assert.equal data, undefined
       @robj.read {option: "value"}
       assert.expect 4
       assert.done()
@@ -121,7 +121,7 @@ module.exports =
     "should assign buffer to rawData if buffer exists and is not blank": (assert) ->
       helper.stub @robj, 'deserialize'
       @robj.ingest 'beer!'
-      assert.equal 'beer!', @robj.rawData
+      assert.equal @robj.rawData, 'beer!'
       assert.done()
 
     "should deserialize if buffer exists and is not blank": (assert) ->
@@ -135,7 +135,7 @@ module.exports =
       helper.stub @robj, 'deserialize'
       @robj.rawData = 'beer!'
       @robj.ingest undefined
-      assert.equal 'beer!', @robj.rawData
+      assert.equal @robj.rawData, 'beer!'
       assert.done()
 
     "should not deserialize if buffer is undefined": (assert) ->
@@ -149,7 +149,7 @@ module.exports =
       helper.stub @robj, 'deserialize'
       @robj.rawData = 'beer!'
       @robj.ingest ''
-      assert.equal 'beer!', @robj.rawData
+      assert.equal @robj.rawData, 'beer!'
       assert.done()
 
     "should not deserialize if buffer is blank": (assert) ->
@@ -158,8 +158,3 @@ module.exports =
       @robj.ingest ''
       assert.expect 0
       assert.done()
-
-# ingest: (buffer) ->
-#   if buffer? and buffer != ''
-#     @rawData = buffer
-#     @deserialize()
