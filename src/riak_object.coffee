@@ -10,8 +10,8 @@ class RiakObject extends EventEmitter
     @path += "/#{key}" if key?
     @contentType = 'application/json'
     @client = new Client
-    @client.on 'beer', (beer) -> drink(beer)
-    @client.on 'barf', (barf) -> @emit 'barf', barf
+    @client.on 'beer', (beer) => @drink(beer)
+    @client.on 'barf', (barf) => @emit 'barf', barf
 
   headers: ->
     {'content-type': @contentType}

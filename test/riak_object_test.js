@@ -1,49 +1,61 @@
 (function() {
-  var Bucket, RiakObject, sys, testCase;
+  var Bucket, Client, RiakObject, sys, testCase;
+  var __bind = function(func, context) {
+    return function(){ return func.apply(context, arguments); };
+  };
   sys = require('sys');
   RiakObject = require('../lib/riak_object');
   Bucket = require('../lib/bucket');
+  Client = require('../lib/client');
   testCase = require('nodeunit').testCase;
   module.exports = {
-    testWithBucket: testCase({
+    "test An robj with a bucket": testCase({
       setUp: function() {
-        this.posts = new Bucket("posts");
-        return (this.robj = new RiakObject(this.posts));
+        this.bucket = new Bucket("posts");
+        return (this.robj = new RiakObject(this.bucket));
       },
-      testHasBucket: function(assert) {
-        assert.equal(this.posts, this.robj.bucket);
+      "test should have a bucket": function(assert) {
+        assert.equal(this.bucket, this.robj.bucket);
         return assert.done();
       },
-      testHasNoKey: function(assert) {
+      "test should not have a key": function(assert) {
         assert.equal(undefined, this.robj.key);
         return assert.done();
       },
-      testHasPath: function(assert) {
-        assert.equal("/posts", this.robj.path);
+      "test should have a path that matches the bucket path": function(assert) {
+        assert.equal(this.bucket.path, this.robj.path);
         return assert.done();
       },
-      testDefaultContentTypeJSON: function(assert) {
+      "test should have a contentType of application/json": function(assert) {
         assert.equal("application/json", this.robj.contentType);
         return assert.done();
       },
-      testDefaultContentTypeJSON: function(assert) {
-        assert.equal("application/json", this.robj.contentType);
+      "test should have a client": function(assert) {
+        assert.ok(this.robj.client instanceof Client);
         return assert.done();
       },
-      testGeneratesHeaders: function(assert) {
+      "test should drink beer if client emits beer": function(assert) {
+        var _drink;
+        _drink = this.robj.drink;
+        this.robj.drink = __bind(function(beer) {
+          assert.equal("beer!", beer);
+          assert.done();
+          return (this.robj.drink = _drink);
+        }, this);
+        return this.robj.client.emit('beer', "beer!");
+      },
+      "test should emit barf if client emits barf": function(assert) {
+        this.robj.on('barf', function(barf) {
+          assert.equal("barf!", barf);
+          return assert.done();
+        });
+        return this.robj.client.emit('barf', "barf!");
+      },
+      "test should generate headers": function(assert) {
         assert.deepEqual({
           'content-type': "application/json"
         }, this.robj.headers());
         return assert.done();
-      },
-      testStoreEmitsBeerOnSelf: function(assert) {
-        var test;
-        test = this;
-        this.robj.on('beer', function() {
-          assert.equals(test.robj, this);
-          return assert.done();
-        });
-        return this.robj.store();
       }
     })
   };
