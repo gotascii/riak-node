@@ -1,7 +1,8 @@
 sys = require 'sys'
-RiakObject = require('../lib/riak_object')
-Bucket = require('../lib/bucket')
-Client = require('../lib/client')
+RiakObject = require '../lib/riak_object'
+Bucket = require '../lib/bucket'
+Client = require '../lib/client'
+helper = require './helper'
 testCase = require('nodeunit').testCase
 
 module.exports =
@@ -9,6 +10,9 @@ module.exports =
     setUp: ->
       @bucket = new Bucket "posts"
       @robj = new RiakObject @bucket
+
+    tearDown: ->
+      helper.unstub()
 
     "should have a bucket": (assert) ->
       assert.equal @bucket, @robj.bucket
@@ -31,13 +35,10 @@ module.exports =
       assert.done()
 
     "should drink beer if client emits beer": (assert) ->
-      _drink = @robj.drink
-      @robj.drink = (beer) =>
-        assert.equal "beer!", beer
+      helper.stub @robj, 'drink', (beer) => assert.equal "beer!", beer
       @robj.client.emit 'beer', "beer!"
       assert.expect(1)
       assert.done()
-      @robj.drink = _drink
 
     "should emit barf if client emits barf": (assert) ->
       @robj.on 'barf', (barf) ->
@@ -77,30 +78,18 @@ module.exports =
       assert.done()
 
     "should serialize on store": (assert) ->
-      # stub
-      _serialize = @robj.serialize
-      @robj.serialize = -> assert.ok true
-      _post = @robj.client.post
-      @robj.client.post = ->
-      # exercise
+      helper.stub @robj, 'serialize', -> assert.ok true
+      helper.stub @robj.client, 'post'
       @robj.store()
       assert.expect(1)
       assert.done()
-      @robj.serialize = _serialize
-      @robj.client.post = _post
 
     "should call client post with path, headers, opts, and rawData": (assert) ->
-      # setup
       @robj.rawData = "rawData!"
       @robj.path = '/path'
-      # stub
-      _serialize = @robj.serialize
-      @robj.serialize = ->
-      _headers = @robj.headers
-      @robj.headers = -> {header: "value"}
-      _post = @robj.client.post
-      @robj.client.post = (path, headers, opts, data) ->
-        # exercise
+      helper.stub @robj, 'serialize'
+      helper.stub @robj, 'headers', -> {header: "value"}
+      helper.stub @robj.client, 'post', (path, headers, opts, data) ->
         assert.equal '/path', path
         assert.deepEqual {header: "value"}, headers
         assert.deepEqual {option: "value"}, opts
@@ -108,6 +97,3 @@ module.exports =
       @robj.store({option: "value"})
       assert.expect(4)
       assert.done()
-      @robj.serialize = _serialize
-      @robj.headers = _headers
-      @robj.client.post = _post

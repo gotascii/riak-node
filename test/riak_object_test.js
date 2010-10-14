@@ -1,5 +1,5 @@
 (function() {
-  var Bucket, Client, RiakObject, sys, testCase;
+  var Bucket, Client, RiakObject, helper, sys, testCase;
   var __bind = function(func, context) {
     return function(){ return func.apply(context, arguments); };
   };
@@ -7,12 +7,16 @@
   RiakObject = require('../lib/riak_object');
   Bucket = require('../lib/bucket');
   Client = require('../lib/client');
+  helper = require('./helper');
   testCase = require('nodeunit').testCase;
   module.exports = {
     "An robj with a bucket": testCase({
       setUp: function() {
         this.bucket = new Bucket("posts");
         return (this.robj = new RiakObject(this.bucket));
+      },
+      tearDown: function() {
+        return helper.unstub();
       },
       "should have a bucket": function(assert) {
         assert.equal(this.bucket, this.robj.bucket);
@@ -35,15 +39,12 @@
         return assert.done();
       },
       "should drink beer if client emits beer": function(assert) {
-        var _drink;
-        _drink = this.robj.drink;
-        this.robj.drink = __bind(function(beer) {
+        helper.stub(this.robj, 'drink', __bind(function(beer) {
           return assert.equal("beer!", beer);
-        }, this);
+        }, this));
         this.robj.client.emit('beer', "beer!");
         assert.expect(1);
-        assert.done();
-        return (this.robj.drink = _drink);
+        return assert.done();
       },
       "should emit barf if client emits barf": function(assert) {
         this.robj.on('barf', function(barf) {
@@ -94,33 +95,24 @@
         return assert.done();
       },
       "should serialize on store": function(assert) {
-        var _post, _serialize;
-        _serialize = this.robj.serialize;
-        this.robj.serialize = function() {
+        helper.stub(this.robj, 'serialize', function() {
           return assert.ok(true);
-        };
-        _post = this.robj.client.post;
-        this.robj.client.post = function() {};
+        });
+        helper.stub(this.robj.client, 'post');
         this.robj.store();
         assert.expect(1);
-        assert.done();
-        this.robj.serialize = _serialize;
-        return (this.robj.client.post = _post);
+        return assert.done();
       },
       "should call client post with path, headers, opts, and rawData": function(assert) {
-        var _headers, _post, _serialize;
         this.robj.rawData = "rawData!";
         this.robj.path = '/path';
-        _serialize = this.robj.serialize;
-        this.robj.serialize = function() {};
-        _headers = this.robj.headers;
-        this.robj.headers = function() {
+        helper.stub(this.robj, 'serialize');
+        helper.stub(this.robj, 'headers', function() {
           return {
             header: "value"
           };
-        };
-        _post = this.robj.client.post;
-        this.robj.client.post = function(path, headers, opts, data) {
+        });
+        helper.stub(this.robj.client, 'post', function(path, headers, opts, data) {
           assert.equal('/path', path);
           assert.deepEqual({
             header: "value"
@@ -129,15 +121,12 @@
             option: "value"
           }, opts);
           return assert.equal('rawData!', data);
-        };
+        });
         this.robj.store({
           option: "value"
         });
         assert.expect(4);
-        assert.done();
-        this.robj.serialize = _serialize;
-        this.robj.headers = _headers;
-        return (this.robj.client.post = _post);
+        return assert.done();
       }
     })
   };

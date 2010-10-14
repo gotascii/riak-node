@@ -1,10 +1,14 @@
 (function() {
-  var Client, testCase;
+  var Client, helper, testCase;
   Client = require('../lib/client');
+  helper = require('./helper');
   testCase = require('nodeunit').testCase;
   module.exports = testCase({
     setUp: function() {
       return (this.client = new Client());
+    },
+    tearDown: function() {
+      return helper.unstub();
     },
     "test should have /riak prefix": function(assert) {
       assert.equal(this.client.prefix, "/riak");
@@ -28,9 +32,7 @@
       });
     },
     "test should call exec with method PUT and pass along args": function(assert) {
-      var _exec;
-      _exec = this.client.exec;
-      this.client.exec = function(method, path, headers, data, opts) {
+      helper.stub(this.client, 'exec', function(method, path, headers, data, opts) {
         assert.equal(method, 'PUT');
         assert.equal(path, "/path");
         assert.deepEqual(headers, {
@@ -40,9 +42,8 @@
         assert.deepEqual(opts, {
           option: "value"
         });
-        assert.done();
-        return (this.client.exec = _exec);
-      };
+        return assert.done();
+      });
       return this.client.put("/path", {
         header: "value"
       }, "raw data", {
@@ -50,9 +51,7 @@
       });
     },
     "test should call exec with method GET and pass along args": function(assert) {
-      var _exec;
-      _exec = this.client.exec;
-      this.client.exec = function(method, path, headers, data, opts) {
+      helper.stub(this.client, 'exec', function(method, path, headers, data, opts) {
         assert.equal(method, 'GET');
         assert.equal(path, "/path");
         assert.deepEqual(headers, {
@@ -62,9 +61,8 @@
         assert.deepEqual(opts, {
           option: "value"
         });
-        assert.done();
-        return (this.client.exec = _exec);
-      };
+        return assert.done();
+      });
       return this.client.get("/path", {
         header: "value"
       }, {
