@@ -25,11 +25,11 @@ class RiakObject extends EventEmitter
   store: (opts) ->
     @serialize()
     method = if @key? 'put' else 'post'
-    @client[method](@path, @headers(), opts, @rawData)
+    @client[method] @path, @headers(), opts, @rawData
 
   read: (opts) ->
     if @key?
-      @client.get(@path, @headers(), opts)
+      @client.get @path, @headers(), opts
     else
       @emit 'barf',
         message: "Key is undefined. I cannot read without a key."

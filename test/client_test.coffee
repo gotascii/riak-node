@@ -1,4 +1,4 @@
-Client = require('../lib/client')
+Client = require '../src/client'
 helper = require './helper'
 testCase = require('nodeunit').testCase
 

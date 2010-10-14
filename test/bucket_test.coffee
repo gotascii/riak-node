@@ -1,4 +1,4 @@
-Bucket = require('../lib/bucket')
+Bucket = require '../src/bucket'
 testCase = require('nodeunit').testCase
 
 module.exports =

@@ -1,7 +1,7 @@
 sys = require 'sys'
-RiakObject = require '../lib/riak_object'
-Bucket = require '../lib/bucket'
-Client = require '../lib/client'
+RiakObject = require '../src/riak_object'
+Bucket = require '../src/bucket'
+Client = require '../src/client'
 helper = require './helper'
 testCase = require('nodeunit').testCase
 

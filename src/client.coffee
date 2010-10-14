@@ -17,20 +17,20 @@ class Client extends EventEmitter
         message: exception.message
 
   put: (path, headers, data, opts)->
-    @exec('PUT', path, headers, data, opts)
+    @exec 'PUT', path, headers, data, opts
 
   get: (path, headers, opts)->
-    @exec('GET', path, headers, undefined, opts)
+    @exec 'GET', path, headers, undefined, opts
 
   querify: (path, opts) ->
     path = "#{@prefix}#{path}"
-    path += "?#{querystring.stringify(opts)}" if opts?
+    path += "?#{querystring.stringify opts}" if opts?
     path
 
   exec: (method, path, headers, opts, data) ->
-    path = @querify(path, opts)
+    path = @querify path, opts
     req = @client.request method, path, headers
-    req.write(data) if data?
+    req.write data if data?
     req.end()
     req.on 'response', (res) ->
       res.setEncoding encoding
