@@ -127,6 +127,82 @@
         });
         assert.expect(4);
         return assert.done();
+      },
+      "should barf on read without key": function(assert) {
+        this.robj.on('barf', function(barf) {
+          return assert.equal("Key is undefined. I cannot read without a key.", barf.message);
+        });
+        this.robj.read();
+        assert.expect(1);
+        return assert.done();
+      },
+      "should call client get with path, headers, and opts": function(assert) {
+        this.robj.key = '1';
+        this.robj.path = '/path';
+        helper.stub(this.robj, 'headers', function() {
+          return {
+            header: "value"
+          };
+        });
+        helper.stub(this.robj.client, 'get', function(path, headers, opts, data) {
+          assert.equal('/path', path);
+          assert.deepEqual({
+            header: "value"
+          }, headers);
+          assert.deepEqual({
+            option: "value"
+          }, opts);
+          return assert.equal(undefined, data);
+        });
+        this.robj.read({
+          option: "value"
+        });
+        assert.expect(4);
+        return assert.done();
+      },
+      "should assign buffer to rawData if buffer exists and is not blank": function(assert) {
+        helper.stub(this.robj, 'deserialize');
+        this.robj.ingest('beer!');
+        assert.equal('beer!', this.robj.rawData);
+        return assert.done();
+      },
+      "should deserialize if buffer exists and is not blank": function(assert) {
+        helper.stub(this.robj, 'deserialize', function() {
+          return assert.ok(true);
+        });
+        this.robj.ingest('beer!');
+        assert.expect(1);
+        return assert.done();
+      },
+      "should not assign buffer to rawData if buffer is undefined": function(assert) {
+        helper.stub(this.robj, 'deserialize');
+        this.robj.rawData = 'beer!';
+        this.robj.ingest(undefined);
+        assert.equal('beer!', this.robj.rawData);
+        return assert.done();
+      },
+      "should not deserialize if buffer is undefined": function(assert) {
+        helper.stub(this.robj, 'deserialize', function() {
+          return assert.ok(true);
+        });
+        this.robj.ingest(undefined);
+        assert.expect(0);
+        return assert.done();
+      },
+      "should not assign buffer to rawData if buffer is blank": function(assert) {
+        helper.stub(this.robj, 'deserialize');
+        this.robj.rawData = 'beer!';
+        this.robj.ingest('');
+        assert.equal('beer!', this.robj.rawData);
+        return assert.done();
+      },
+      "should not deserialize if buffer is blank": function(assert) {
+        helper.stub(this.robj, 'deserialize', function() {
+          return assert.ok(true);
+        });
+        this.robj.ingest('');
+        assert.expect(0);
+        return assert.done();
       }
     })
   };

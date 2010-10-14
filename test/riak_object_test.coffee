@@ -81,7 +81,7 @@ module.exports =
       helper.stub @robj, 'serialize', -> assert.ok true
       helper.stub @robj.client, 'post'
       @robj.store()
-      assert.expect(1)
+      assert.expect 1
       assert.done()
 
     "should call client post with path, headers, opts, and rawData": (assert) ->
@@ -94,6 +94,72 @@ module.exports =
         assert.deepEqual {header: "value"}, headers
         assert.deepEqual {option: "value"}, opts
         assert.equal 'rawData!', data
-      @robj.store({option: "value"})
-      assert.expect(4)
+      @robj.store {option: "value"}
+      assert.expect 4
       assert.done()
+
+    "should barf on read without key": (assert) ->
+      @robj.on 'barf', (barf) ->
+        assert.equal "Key is undefined. I cannot read without a key.", barf.message
+      @robj.read()
+      assert.expect 1
+      assert.done()
+
+    "should call client get with path, headers, and opts": (assert) ->
+      @robj.key = '1'
+      @robj.path = '/path'
+      helper.stub @robj, 'headers', -> {header: "value"}
+      helper.stub @robj.client, 'get', (path, headers, opts, data) ->
+        assert.equal '/path', path
+        assert.deepEqual {header: "value"}, headers
+        assert.deepEqual {option: "value"}, opts
+        assert.equal undefined, data
+      @robj.read {option: "value"}
+      assert.expect 4
+      assert.done()
+
+    "should assign buffer to rawData if buffer exists and is not blank": (assert) ->
+      helper.stub @robj, 'deserialize'
+      @robj.ingest 'beer!'
+      assert.equal 'beer!', @robj.rawData
+      assert.done()
+
+    "should deserialize if buffer exists and is not blank": (assert) ->
+      helper.stub @robj, 'deserialize', ->
+        assert.ok true
+      @robj.ingest 'beer!'
+      assert.expect 1
+      assert.done()
+
+    "should not assign buffer to rawData if buffer is undefined": (assert) ->
+      helper.stub @robj, 'deserialize'
+      @robj.rawData = 'beer!'
+      @robj.ingest undefined
+      assert.equal 'beer!', @robj.rawData
+      assert.done()
+
+    "should not deserialize if buffer is undefined": (assert) ->
+      helper.stub @robj, 'deserialize', ->
+        assert.ok true
+      @robj.ingest undefined
+      assert.expect 0
+      assert.done()
+
+    "should not assign buffer to rawData if buffer is blank": (assert) ->
+      helper.stub @robj, 'deserialize'
+      @robj.rawData = 'beer!'
+      @robj.ingest ''
+      assert.equal 'beer!', @robj.rawData
+      assert.done()
+
+    "should not deserialize if buffer is blank": (assert) ->
+      helper.stub @robj, 'deserialize', ->
+        assert.ok true
+      @robj.ingest ''
+      assert.expect 0
+      assert.done()
+
+# ingest: (buffer) ->
+#   if buffer? and buffer != ''
+#     @rawData = buffer
+#     @deserialize()
