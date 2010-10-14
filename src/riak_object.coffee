@@ -23,8 +23,8 @@ class RiakObject extends EventEmitter
     @data = JSON.parse @rawData if @rawData?
 
   store: (opts) ->
-    method = if obj.key? 'put' else 'post'
     @serialize()
+    method = if @key? 'put' else 'post'
     @client[method](@path, @headers(), opts, @rawData)
 
   read: (opts) ->

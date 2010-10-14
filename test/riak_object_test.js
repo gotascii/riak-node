@@ -38,18 +38,20 @@
         var _drink;
         _drink = this.robj.drink;
         this.robj.drink = __bind(function(beer) {
-          assert.equal("beer!", beer);
-          assert.done();
-          return (this.robj.drink = _drink);
+          return assert.equal("beer!", beer);
         }, this);
-        return this.robj.client.emit('beer', "beer!");
+        this.robj.client.emit('beer', "beer!");
+        assert.expect(1);
+        assert.done();
+        return (this.robj.drink = _drink);
       },
       "should emit barf if client emits barf": function(assert) {
         this.robj.on('barf', function(barf) {
-          assert.equal("barf!", barf);
-          return assert.done();
+          return assert.equal("barf!", barf);
         });
-        return this.robj.client.emit('barf', "barf!");
+        this.robj.client.emit('barf', "barf!");
+        assert.expect(1);
+        return assert.done();
       },
       "should generate headers": function(assert) {
         assert.deepEqual({
@@ -90,6 +92,52 @@
           beers: 10
         }, this.robj.data);
         return assert.done();
+      },
+      "should serialize on store": function(assert) {
+        var _post, _serialize;
+        _serialize = this.robj.serialize;
+        this.robj.serialize = function() {
+          return assert.ok(true);
+        };
+        _post = this.robj.client.post;
+        this.robj.client.post = function() {};
+        this.robj.store();
+        assert.expect(1);
+        assert.done();
+        this.robj.serialize = _serialize;
+        return (this.robj.client.post = _post);
+      },
+      "should call client post with path, headers, opts, and rawData": function(assert) {
+        var _headers, _post, _serialize;
+        this.robj.rawData = "rawData!";
+        this.robj.path = '/path';
+        _serialize = this.robj.serialize;
+        this.robj.serialize = function() {};
+        _headers = this.robj.headers;
+        this.robj.headers = function() {
+          return {
+            header: "value"
+          };
+        };
+        _post = this.robj.client.post;
+        this.robj.client.post = function(path, headers, opts, data) {
+          assert.equal('/path', path);
+          assert.deepEqual({
+            header: "value"
+          }, headers);
+          assert.deepEqual({
+            option: "value"
+          }, opts);
+          return assert.equal('rawData!', data);
+        };
+        this.robj.store({
+          option: "value"
+        });
+        assert.expect(4);
+        assert.done();
+        this.robj.serialize = _serialize;
+        this.robj.headers = _headers;
+        return (this.robj.client.post = _post);
       }
     })
   };

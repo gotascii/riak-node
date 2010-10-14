@@ -34,15 +34,17 @@ module.exports =
       _drink = @robj.drink
       @robj.drink = (beer) =>
         assert.equal "beer!", beer
-        assert.done()
-        @robj.drink = _drink
       @robj.client.emit 'beer', "beer!"
+      assert.expect(1)
+      assert.done()
+      @robj.drink = _drink
 
     "should emit barf if client emits barf": (assert) ->
       @robj.on 'barf', (barf) ->
         assert.equal "barf!", barf
-        assert.done()
       @robj.client.emit 'barf', "barf!"
+      assert.expect(1)
+      assert.done()
 
     "should generate headers": (assert) ->
       assert.deepEqual {'content-type':"application/json"}, @robj.headers()
@@ -74,10 +76,43 @@ module.exports =
       assert.deepEqual {beers: 10}, @robj.data
       assert.done()
 
-  # deserialize: ->
-  #   @data = JSON.parse @rawData if @rawData?
+    "should serialize on store": (assert) ->
+      # stub
+      _serialize = @robj.serialize
+      @robj.serialize = -> assert.ok true
+      _post = @robj.client.post
+      @robj.client.post = ->
+      # exercise
+      @robj.store()
+      assert.expect(1)
+      assert.done()
+      @robj.serialize = _serialize
+      @robj.client.post = _post
+
+    "should call client post with path, headers, opts, and rawData": (assert) ->
+      # setup
+      @robj.rawData = "rawData!"
+      @robj.path = '/path'
+      # stub
+      _serialize = @robj.serialize
+      @robj.serialize = ->
+      _headers = @robj.headers
+      @robj.headers = -> {header: "value"}
+      _post = @robj.client.post
+      @robj.client.post = (path, headers, opts, data) ->
+        # exercise
+        assert.equal '/path', path
+        assert.deepEqual {header: "value"}, headers
+        assert.deepEqual {option: "value"}, opts
+        assert.equal 'rawData!', data
+      @robj.store({option: "value"})
+      assert.expect(4)
+      assert.done()
+      @robj.serialize = _serialize
+      @robj.headers = _headers
+      @robj.client.post = _post
 
   # store: (opts) ->
-  #   method = if obj.key? 'put' else 'post'
   #   @serialize()
+  #   method = if obj.key? 'put' else 'post'
   #   @client[method](@path, @headers(), opts, @rawData)
