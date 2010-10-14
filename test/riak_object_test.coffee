@@ -111,8 +111,3 @@ module.exports =
       @robj.serialize = _serialize
       @robj.headers = _headers
       @robj.client.post = _post
-
-  # store: (opts) ->
-  #   @serialize()
-  #   method = if obj.key? 'put' else 'post'
-  #   @client[method](@path, @headers(), opts, @rawData)
