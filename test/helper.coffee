@@ -1,3 +1,9 @@
+global.sys = require 'sys'
+global.Bucket = require '../src/bucket'
+global.Client = require '../src/client'
+global.Robject = require '../src/robject'
+global.testCase = require('nodeunit').testCase
+
 stubs = []
 module.exports =
   stub: (obj, name, fun) ->

@@ -1,15 +1,10 @@
-sys = require 'sys'
-RiakObject = require '../src/riak_object'
-Bucket = require '../src/bucket'
-Client = require '../src/client'
 helper = require './helper'
-testCase = require('nodeunit').testCase
 
 module.exports =
   "An robj with a bucket": testCase
     setUp: ->
       @bucket = new Bucket "posts"
-      @robj = new RiakObject @bucket
+      @robj = new Robject @bucket
 
     tearDown: ->
       helper.unstub()

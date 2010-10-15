@@ -2,7 +2,7 @@ sys = require 'sys'
 Client = require './client'
 EventEmitter = require('events').EventEmitter
 
-class RiakObject extends EventEmitter
+class Robject extends EventEmitter
   constructor: (bucket, key) ->
     @bucket = bucket
     @key = key
@@ -47,4 +47,4 @@ class RiakObject extends EventEmitter
     @emit 'beer'
     @bucket.emit 'beer', this
 
-module.exports = RiakObject
+module.exports = Robject

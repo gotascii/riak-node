@@ -1,34 +1,34 @@
-Bucket = require '../src/bucket'
-testCase = require('nodeunit').testCase
+helper = require './helper'
 
 module.exports =
   "A bucket": testCase
-    setUp: -> @posts = new Bucket "posts"
+    setUp: ->
+      @bucket = new Bucket "posts"
+
+    tearDown: ->
+      helper.unstub()
 
     "should have a name": (assert) ->
-      assert.equals @posts.name, "posts"
+      assert.equals @bucket.name, "posts"
       assert.done()
 
     "should have a path": (assert) ->
-      assert.equals @posts.path, "/posts"
+      assert.equals @bucket.path, "/posts"
       assert.done()
 
-# Bucket = require('../lib/bucket')
-# posts = new Bucket "posts"
-# posts.on 'beer', (robj2) -> sys.puts("freshly beered robj: #{sys.inspect(robj2)}")
-# 
-# RiakObject = require('../lib/riak_object')
-# robj = new RiakObject(posts)
-# robj.data = {terd: "licks"}
-# robj.on 'beer', ->
-#   sys.puts("robj: #{sys.inspect(robj)}")
-#   robj3 = new RiakObject(posts, robj.key)
-#   robj3.on 'beer', -> sys.puts("robj3: #{sys.inspect(robj3)}")
-#   robj3.read()
-# robj.store()
+    "should have a client": (assert) ->
+      assert.ok @bucket.client instanceof Client
+      assert.done()
 
-# Bucket = require('./lib/bucket')
-# posts = new Bucket "posts"
-# RiakObject = require('./lib/riak_object')
-# robj = new RiakObject(posts)
-# robj.store()
+    "should drink beer if client emits beer": (assert) ->
+      helper.stub @bucket, 'drink', (beer) => assert.equal "beer!", beer
+      @bucket.client.emit 'beer', "beer!"
+      assert.expect 1
+      assert.done()
+
+    # "should emit barf if client emits barf": (assert) ->
+    #   @robj.on 'barf', (barf) ->
+    #     assert.equal barf, "barf!"
+    #   @robj.client.emit 'barf', "barf!"
+    #   assert.expect 1
+    #   assert.done()

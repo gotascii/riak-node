@@ -1,6 +1,4 @@
-Client = require '../src/client'
 helper = require './helper'
-testCase = require('nodeunit').testCase
 
 module.exports =
   "A client": testCase
