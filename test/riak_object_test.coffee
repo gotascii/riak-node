@@ -158,3 +158,46 @@ module.exports =
       @robj.ingest ''
       assert.expect 0
       assert.done()
+
+    "should set key based on location header": (assert) ->
+      beer = {headers: {location: "/riak/posts/321"}}
+      @robj.drink beer
+      assert.equal @robj.key, '321'
+      assert.done()
+
+    "should not set key if a location is not present": (assert) ->
+      beer = {headers: {header: "value"}}
+      @robj.key = '123'
+      @robj.drink beer
+      assert.equal @robj.key, '123'
+      assert.done()
+
+    "should set contentType based on content-type header": (assert) ->
+      beer = {headers: {'content-type': "some/type"}}
+      @robj.drink beer
+      assert.equal @robj.contentType, 'some/type'
+      assert.done()
+
+    "should ingest the beer buffer": (assert) ->
+      helper.stub @robj, 'ingest', (buffer) ->
+        assert.equal buffer, 'beer!'
+      beer = {buffer: 'beer!', headers: {}}
+      @robj.drink beer
+      assert.expect 1
+      assert.done()
+
+    "should emit beer on drink": (assert) ->
+      beer = {headers: {}}
+      @robj.on 'beer', ->
+        assert.ok true
+      @robj.drink beer
+      assert.expect 1
+      assert.done()
+
+    "should make bucket emit beer with self on drink": (assert) ->
+      beer = {headers: {}}
+      @robj.bucket.on 'beer', (robj) =>
+        assert.equal @robj, robj
+      @robj.drink beer
+      assert.expect 1
+      assert.done()
