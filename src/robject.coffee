@@ -6,9 +6,9 @@ class Robject extends EventEmitter
   constructor: (bucket, key) ->
     @bucket = bucket
     @key = key
+    @path = bucket.path
+    @path += "/#{key}" if key?
     @resource = new Resource this
-    @resource.path = bucket.path
-    @resource.path += "/#{key}" if key?
 
   store: (opts) ->
     method = 'post' unless @key?

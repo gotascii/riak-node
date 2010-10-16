@@ -16,6 +16,20 @@ module.exports =
       assert.ok @bucket.resource instanceof Resource
       assert.done()
 
-    "should set the resource path to /name": (assert) ->
-      assert.equal @bucket.resource.path, "/posts"
+    "should set the path to /name": (assert) ->
+      assert.equal @bucket.path, "/posts"
+      assert.done()
+
+    "should delegate store to resource": (assert) ->
+      helper.stub @bucket.resource, 'store', (opts) ->
+        assert.deepEqual opts, {option:'value'}
+      @bucket.store {option:'value'}
+      assert.expect 1
+      assert.done()
+
+    "should delegate read to resource get": (assert) ->
+      helper.stub @bucket.resource, 'get', (opts) ->
+        assert.deepEqual opts, {option:'value'}
+      @bucket.read {option:'value'}
+      assert.expect 1
       assert.done()

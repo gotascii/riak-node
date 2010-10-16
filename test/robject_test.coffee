@@ -1,32 +1,6 @@
 helper = require './helper'
 
 module.exports =
-  "An robj with a bucket and a key": testCase
-    setUp: ->
-      @bucket = new Bucket "posts"
-      @robj = new Robject @bucket, '123'
-
-    "should have a key": (assert) ->
-      assert.equal @robj.key, '123'
-      assert.done()
-
-    "should set the resource path to the bucket path plus the key": (assert) ->
-      assert.equal @robj.resource.path, "#{@bucket.path}/123"
-      assert.done()
-
-    "should get the resource on read if key is present": (assert) ->
-      helper.stub @robj.resource, 'get', (opts) ->
-        assert.deepEqual opts, {option: "value"}
-      @robj.read({option: "value"})
-      assert.expect 1
-      assert.done()
-
-    "should put resource with options": (assert) ->
-      helper.stub @robj.resource, 'store', (opts, meth) ->
-        assert.deepEqual opts, {option: "value"}
-        assert.equal meth, 'put'
-      @robj.store({option: "value"})
-
   "An robj with a bucket": testCase
     setUp: ->
       @bucket = new Bucket "posts"
@@ -43,8 +17,8 @@ module.exports =
       assert.equal @robj.key, undefined
       assert.done()
 
-    "should set the resource path to the bucket path": (assert) ->
-      assert.equal @robj.resource.path, @bucket.path
+    "should have the same path as the bucket": (assert) ->
+      assert.equal @robj.path, @bucket.path
       assert.done()
 
     "should barf on read without key": (assert) ->
@@ -59,7 +33,7 @@ module.exports =
         assert.deepEqual opts, {option: "value"}
         assert.equal meth, 'post'
       @robj.store({option: "value"})
-      
+      assert.done()
 
     "should set key based on location header": (assert) ->
       beer = {headers: {location: "/riak/posts/321"}}
@@ -89,4 +63,31 @@ module.exports =
         assert.equal @robj, robj
       @robj.drink beer
       assert.expect 1
+      assert.done()
+
+  "An robj with a bucket and a key": testCase
+    setUp: ->
+      @bucket = new Bucket "posts"
+      @robj = new Robject @bucket, '123'
+
+    "should have a key": (assert) ->
+      assert.equal @robj.key, '123'
+      assert.done()
+
+    "should have the same path as the bucket path plus the key": (assert) ->
+      assert.equal @robj.path, "#{@bucket.path}/123"
+      assert.done()
+
+    "should get the resource on read if key is present": (assert) ->
+      helper.stub @robj.resource, 'get', (opts) ->
+        assert.deepEqual opts, {option: "value"}
+      @robj.read({option: "value"})
+      assert.expect 1
+      assert.done()
+
+    "should store the resource with options": (assert) ->
+      helper.stub @robj.resource, 'store', (opts, meth) ->
+        assert.deepEqual opts, {option: "value"}
+        assert.equal meth, undefined
+      @robj.store({option: "value"})
       assert.done()

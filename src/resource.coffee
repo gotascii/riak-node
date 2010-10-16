@@ -7,6 +7,7 @@ class Resource
     @client = new Client
     @client.on 'beer', (beer) -> entity.drink beer
     @client.on 'barf', (barf) -> entity.emit 'barf', barf
+    @__defineGetter__ 'path', -> entity.path
 
   headers: ->
     {'content-type': @contentType}

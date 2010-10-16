@@ -5,11 +5,16 @@ module.exports =
     setUp: ->
       @bucket = new Bucket "posts"
       @robj = new Robject @bucket
+      @robj.path = '/path'
       @resource = new Resource @robj
 
     "should have a client": (assert) ->
       assert.ok @resource.client instanceof Client
       assert.done()
+
+    "should have the same path as the entity": (assert) ->
+      assert.equal @resource.path, '/path'
+      assert.done()    
 
     "should make robj drink beer if client emits beer": (assert) ->
       helper.stub @robj, 'drink', (beer) ->
@@ -64,7 +69,6 @@ module.exports =
 
     "should call client post with path, headers, opts, and rawData": (assert) ->
       @resource.rawData = "rawData!"
-      @resource.path = '/path'
       helper.stub @resource, 'serialize'
       helper.stub @resource, 'headers', -> {header: "value"}
       helper.stub @resource.client, 'post', (path, headers, opts, data) ->
@@ -77,7 +81,6 @@ module.exports =
       assert.done()
 
     "should call client get with path, headers, and opts": (assert) ->
-      @resource.path = '/path'
       helper.stub @resource, 'headers', -> {header: "value"}
       helper.stub @resource.client, 'get', (path, headers, opts, data) ->
         assert.equal path, '/path'
