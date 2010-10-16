@@ -19,7 +19,7 @@ module.exports =
       assert.equal @client.client.port, 8098
       assert.done()
 
-    "should emit barf on client error": (assert) ->
+    "should make emitter emit barf on client error": (assert) ->
       @client.on 'barf', (exception) ->
         assert.equal exception.message, "error!"
         assert.done()

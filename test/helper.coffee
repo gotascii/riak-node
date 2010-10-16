@@ -1,7 +1,9 @@
 global.sys = require 'sys'
 global.Bucket = require '../src/bucket'
 global.Client = require '../src/client'
+global.EventEmitter = require('events').EventEmitter
 global.Robject = require '../src/robject'
+global.Resource = require '../src/resource'
 global.testCase = require('nodeunit').testCase
 
 stubs = []

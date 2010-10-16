@@ -33,7 +33,7 @@ class Client extends EventEmitter
     req.write data if data?
     req.end()
     req.on 'response', (res) ->
-      res.setEncoding encoding
+      res.setEncoding @encoding
       buffer = ''
       res.on 'data', (chunk) -> buffer += chunk
       res.on 'end', ->

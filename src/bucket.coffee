@@ -1,11 +1,11 @@
+sys = require 'sys'
 EventEmitter = require('events').EventEmitter
-Client = require './client'
+Resource = require './resource'
 
 class Bucket extends EventEmitter
   constructor: (name) ->
     @name = name
-    @path = "/#{name}"
-    @client = new Client
-    @client.on 'beer', (beer) => @drink beer
+    @resource = new Resource this
+    @resource.path = "/#{name}"
 
 module.exports = Bucket
