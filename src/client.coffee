@@ -16,7 +16,7 @@ class Client extends EventEmitter
       @emit 'barf',
         message: exception.message
 
-  put: (path, headers, data, opts)->
+  put: (path, headers, data, opts) ->
     @exec 'PUT', path, headers, data, opts
 
   get: (path, headers, opts)->
@@ -36,7 +36,7 @@ class Client extends EventEmitter
       res.setEncoding @encoding
       buffer = ''
       res.on 'data', (chunk) -> buffer += chunk
-      res.on 'end', ->
+      res.on 'end', =>
         error = Errors[res.statusCode]
         if error?
           @emit 'barf',

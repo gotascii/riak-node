@@ -6,7 +6,7 @@ class Resource
     @contentType = 'application/json'
     @client = new Client
     @client.on 'beer', (beer) -> entity.drink beer
-    @client.on 'barf', (barf) => entity.emit 'barf', barf
+    @client.on 'barf', (barf) -> entity.emit 'barf', barf
 
   headers: ->
     {'content-type': @contentType}
