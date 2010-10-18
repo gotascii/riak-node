@@ -19,11 +19,11 @@ class Client extends EventEmitter
       @emit 'barf',
         message: exception.message
 
-  put: (path, headers, data, opts) ->
-    @exec 'PUT', path, headers, data, opts
+  put: (path, headers, opts, data) ->
+    @exec 'PUT', path, headers, opts, data
 
   get: (path, headers, opts)->
-    @exec 'GET', path, headers, undefined, opts
+    @exec 'GET', path, headers, opts, undefined
 
   querify: (path, opts) ->
     path = "#{@prefix}#{path}"
@@ -32,7 +32,7 @@ class Client extends EventEmitter
 
   error: (response) ->
     status = response.statusCode
-    if 400 <= status < 600
+    if 400 <= status
       error = new Error "#{status}"
       msg = Errors[status]
       error.message += " #{msg}." if msg?
@@ -56,6 +56,6 @@ class Client extends EventEmitter
           @emit 'beer',
             statusCode: res.statusCode,
             headers: res.headers
-            rawData: buffer
+            buffer: buffer
 
 module.exports = Client

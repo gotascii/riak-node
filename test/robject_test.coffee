@@ -41,14 +41,6 @@ module.exports =
       assert.equal @robj.key, '321'
       assert.done()
 
-    "should make resource drink beer when robj drinks beer": (assert) ->
-      cheapBeer = {headers: {location: "/riak/posts"}}
-      helper.stub @robj.resource, 'drink', (beer) ->
-        assert.equal cheapBeer, beer
-      @robj.drink cheapBeer
-      assert.expect 1
-      assert.done()
-
     "should emit beer on drink": (assert) ->
       beer = {headers: {location: "/riak/posts"}}
       @robj.on 'beer', ->

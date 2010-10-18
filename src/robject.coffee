@@ -23,7 +23,6 @@ class Robject extends EventEmitter
 
   drink: (beer) ->
     @key = beer.headers.location.split("/").pop()
-    @resource.drink beer
     @emit 'beer'
     @bucket.emit 'beer', this
 

@@ -5,12 +5,15 @@ class Resource
   constructor: (entity) ->
     @contentType = 'application/json'
     @client = new Client
-    @client.on 'beer', (beer) -> entity.drink beer
+    @client.on 'beer', (beer) =>
+      @drink beer
+      entity.drink beer
     @client.on 'barf', (error) ->
-      msg = entity.error(statusCode)
-      error.message += msg if msg?
+      msg = entity.error(error.statusCode)
+      error.message += " #{msg}." if msg?
       entity.emit 'barf', error
     @__defineGetter__ 'path', -> entity.path
+    entity.__defineGetter__ 'data', => @data
 
   headers: ->
     {'content-type': @contentType}

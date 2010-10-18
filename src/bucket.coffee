@@ -2,14 +2,15 @@ sys = require 'sys'
 EventEmitter = require('events').EventEmitter
 Resource = require './resource'
 
+Errors = 
+  400: "The submitted JSON is invalid"
+  415: "The Content-Type was not set to application/json in the request"
+
 class Bucket extends EventEmitter
   constructor: (name) ->
     @name = name
     @path = "/#{name}"
     @resource = new Resource this
-    @error =
-      400: "The submitted JSON is invalid."
-      415: "The Content-Type was not set to application/json in the request."
 
   store: (opts) ->
     @resource.store opts
@@ -18,7 +19,10 @@ class Bucket extends EventEmitter
     @resource.get opts
 
   error: (statusCode) ->
-    @error[statusCode]
+    Errors[statusCode]
+
+  drink: (beer) ->
+    @emit 'beer'
 
 module.exports = Bucket
 
