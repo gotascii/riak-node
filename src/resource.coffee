@@ -6,7 +6,10 @@ class Resource
     @contentType = 'application/json'
     @client = new Client
     @client.on 'beer', (beer) -> entity.drink beer
-    @client.on 'barf', (barf) -> entity.emit 'barf', barf
+    @client.on 'barf', (error) ->
+      msg = entity.error(statusCode)
+      error.message += msg if msg?
+      entity.emit 'barf', error
     @__defineGetter__ 'path', -> entity.path
 
   headers: ->

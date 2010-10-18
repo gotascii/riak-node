@@ -50,3 +50,13 @@ module.exports =
       path = @client.querify("/path", {option: "value"})
       assert.equal path, "/riak/path?option=value"
       assert.done()
+
+    "should return undefined if statusCode is 200": (assert) ->
+      err = @client.error({statusCode: 200})
+      assert.equal err, undefined
+      assert.done()
+
+    "should return an error if statusCode is 400": (assert) ->
+      err = @client.error({statusCode: 400})
+      assert.ok err instanceof Error
+      assert.done()

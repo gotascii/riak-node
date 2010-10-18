@@ -7,12 +7,18 @@ class Bucket extends EventEmitter
     @name = name
     @path = "/#{name}"
     @resource = new Resource this
+    @error =
+      400: "The submitted JSON is invalid."
+      415: "The Content-Type was not set to application/json in the request."
 
   store: (opts) ->
     @resource.store opts
 
   read: (opts) ->
     @resource.get opts
+
+  error: (statusCode) ->
+    @error[statusCode]
 
 module.exports = Bucket
 

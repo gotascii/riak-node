@@ -2,10 +2,13 @@ sys = require 'sys'
 http = require 'http'
 querystring = require 'querystring'
 EventEmitter = require('events').EventEmitter
-Errors =
-  400: "Bad Request - e.g. when r parameter is invalid (> N)"
-  404: "Not Found - the object could not be found on enough partitions"
-  503: "Service Unavailable - the request timed out internally"
+
+Errors = 
+  400: "Bad Request"
+  404: "Not Found"
+  412: "Precondition Failed"
+  415: "Unsupported Media Type"
+  503: "Service Unavailable"
 
 class Client extends EventEmitter
   constructor: ->
@@ -27,21 +30,28 @@ class Client extends EventEmitter
     path += "?#{querystring.stringify opts}" if opts?
     path
 
+  error: (response) ->
+    status = response.statusCode
+    if 400 <= status < 600
+      error = new Error "#{status}"
+      msg = Errors[status]
+      error.message += " #{msg}." if msg?
+      error.statusCode = status
+      error
+
   exec: (method, path, headers, opts, data) ->
     path = @querify path, opts
     req = @client.request method, path, headers
     req.write data if data?
     req.end()
-    req.on 'response', (res) ->
+    req.on 'response', (res) =>
       res.setEncoding @encoding
       buffer = ''
       res.on 'data', (chunk) -> buffer += chunk
       res.on 'end', =>
-        error = Errors[res.statusCode]
+        error = @error(res)
         if error?
-          @emit 'barf',
-            statusCode: res.statusCode,
-            message: error
+          @emit 'barf', error
         else
           @emit 'beer',
             statusCode: res.statusCode,
