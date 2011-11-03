@@ -8,6 +8,10 @@ module.exports =
       @robj.path = '/path'
       @resource = new Resource @robj
 
+    "should have utf8 encoding": (assert) ->
+      assert.equal @resource.encoding, "utf8"
+      assert.done()
+
     "should have a client": (assert) ->
       assert.ok @resource.client instanceof Client
       assert.done()
@@ -123,45 +127,33 @@ module.exports =
       assert.expect 4
       assert.done()
     
-    "should assign buffer to rawData if buffer exists and is not blank": (assert) ->
-      helper.stub @resource, 'deserialize'
-      @resource.ingest 'beer!'
-      assert.equal @resource.rawData, 'beer!'
-      assert.done()
-    
-    "should deserialize if buffer exists and is not blank": (assert) ->
-      helper.stub @resource, 'deserialize', ->
-        assert.ok true
-      @resource.ingest 'beer!'
-      assert.expect 1
-      assert.done()
-    
     "should not assign buffer to rawData if buffer is undefined": (assert) ->
       helper.stub @resource, 'deserialize'
       @resource.rawData = 'beer!'
-      @resource.ingest undefined
+      @resource.ingest()
       assert.equal @resource.rawData, 'beer!'
       assert.done()
     
     "should not deserialize if buffer is undefined": (assert) ->
       helper.stub @resource, 'deserialize', ->
         assert.ok true
-      @resource.ingest undefined
+      @resource.ingest()
       assert.expect 0
       assert.done()
-    
-    "should not assign buffer to rawData if buffer is blank": (assert) ->
+
+    "should assign buffer to rawData if buffer exists": (assert) ->
       helper.stub @resource, 'deserialize'
-      @resource.rawData = 'beer!'
-      @resource.ingest ''
+      @resource.buffer = new Buffer 'beer!'
+      @resource.ingest()
       assert.equal @resource.rawData, 'beer!'
       assert.done()
-    
-    "should not deserialize if buffer is blank": (assert) ->
+
+    "should deserialize if buffer exists": (assert) ->
       helper.stub @resource, 'deserialize', ->
         assert.ok true
-      @resource.ingest ''
-      assert.expect 0
+      @resource.buffer = new Buffer 'beer!'
+      @resource.ingest()
+      assert.expect 1
       assert.done()
     
     "should set contentType based on content-type header": (assert) ->
@@ -170,10 +162,11 @@ module.exports =
       assert.equal @resource.contentType, 'some/type'
       assert.done()
     
-    "should ingest the beer buffer": (assert) ->
-      helper.stub @resource, 'ingest', (buffer) ->
-        assert.equal buffer, 'beer!'
-      beer = {buffer: 'beer!', headers: {location: "/riak/posts/321"}}
+    "should ingest the buffer": (assert) ->
+      helper.stub @resource, 'ingest', ->
+        sys.puts 'omfg'
+        assert.ok true
+      beer = {headers: {location: "/riak/posts/321"}}
       @resource.drink beer
       assert.expect 1
       assert.done()

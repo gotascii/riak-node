@@ -10,10 +10,6 @@ module.exports =
     "should have /riak prefix": (assert) ->
       assert.equal @client.prefix, "/riak"
       assert.done()
-  
-    "should have utf8 encoding": (assert) ->
-      assert.equal @client.encoding, "utf8"
-      assert.done()
 
     "should have http.client with port 8098": (assert) ->
       assert.equal @client.client.port, 8098

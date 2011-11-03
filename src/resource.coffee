@@ -5,6 +5,8 @@ class Resource
   constructor: (entity) ->
     @contentType = 'application/json'
     @client = new Client
+    @encoding = 'utf8'
+    @client.on 'data', (chunk) => @buffer = chunk
     @client.on 'beer', (beer) =>
       @drink beer
       entity.drink beer
@@ -32,13 +34,16 @@ class Resource
   get: (opts) ->
     @client.get @path, @headers(), opts
 
-  ingest: (buffer) ->
-    if buffer? and buffer != ''
-      @rawData = buffer
+  ingest: ->
+    sys.puts 'hiho'
+    if @buffer?
+      @rawData = @buffer.toString @encoding
       @deserialize()
+      delete @buffer
 
   drink: (beer) ->
     @contentType = beer.headers['content-type']
-    @ingest beer.buffer
+    @ingest
+    sys.puts 'hi'
 
 module.exports = Resource

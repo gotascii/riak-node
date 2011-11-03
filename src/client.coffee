@@ -13,7 +13,6 @@ Errors =
 class Client extends EventEmitter
   constructor: ->
     @prefix = '/riak'
-    @encoding = 'utf8'
     @client = http.createClient 8098
     @client.on 'error', (exception) =>
       @emit 'barf',
@@ -45,9 +44,7 @@ class Client extends EventEmitter
     req.write data if data?
     req.end()
     req.on 'response', (res) =>
-      res.setEncoding @encoding
-      buffer = ''
-      res.on 'data', (chunk) -> buffer += chunk
+      res.on 'data', (chunk) => @emit 'data', chunk
       res.on 'end', =>
         error = @error(res)
         if error?
@@ -56,6 +53,5 @@ class Client extends EventEmitter
           @emit 'beer',
             statusCode: res.statusCode,
             headers: res.headers
-            buffer: buffer
 
 module.exports = Client
